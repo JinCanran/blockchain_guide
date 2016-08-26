@@ -23,11 +23,11 @@ package main
 //hard-coding.
 
 import (
-	"errors"
-	"fmt"
-	"strconv"
+	"errors"  //errors
+	"fmt"     //include Println
+	"strconv" //convert between str and int
 
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/core/chaincode/shim"  //interface to chaincode inclede stub.PutState and stub.GetState
 )
 
 // SimpleChaincode example simple Chaincode implementation
@@ -75,6 +75,11 @@ func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args
 	if function == "delete" {
 		// Deletes an entity from its state
 		return t.delete(stub, args)
+	}
+	
+	if function == "NewAccount" {
+		// new an entity from its state
+		return t.NewAccount(stub, args)
 	}
 
 	var A, B string    // Entities
@@ -145,6 +150,34 @@ func (t *SimpleChaincode) delete(stub *shim.ChaincodeStub, args []string) ([]byt
 
 	return nil, nil
 }
+//add function New account by jcr
+func (t *SimpleChaincode) NewAccount(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	var A string    // Entities
+	var Aval int // Asset holdings
+	var err error
+
+	if len(args) != 2 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 2")
+	}
+
+	// Initialize the chaincode
+	A = args[0]
+	Aval, err = strconv.Atoi(args[1])
+	if err != nil {
+		return nil, errors.New("Expecting integer value for asset holding")
+	}
+
+	fmt.Printf("Aval = %d\n", Aval)
+
+	// Write the state to the ledger
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
